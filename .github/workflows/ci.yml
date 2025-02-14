@@ -25,13 +25,18 @@ jobs:
         
     - name: Install Chrome
       run: |
-        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-        sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable
     
-    - name: Setup ChromeDriver
-      uses: nanasess/setup-chromedriver@v2
+    - name: Install ChromeDriver
+      run: |
+        CHROME_VERSION=$(google-chrome --version | cut -d " " -f3 | cut -d "." -f1)
+        wget -N https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}
+        CHROMEDRIVER_VERSION=$(cat LATEST_RELEASE_${CHROME_VERSION})
+        wget https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        chmod +x chromedriver
+        sudo mv chromedriver /usr/local/bin/
     
     - name: Run tests
       run: |
@@ -40,4 +45,4 @@ jobs:
         pytest test_todo_app.py -v
       env:
         CI: true
-        CHROMEDRIVER_PATH: /usr/local/bin/chromedriver
+        DISPLAY: ':99'
